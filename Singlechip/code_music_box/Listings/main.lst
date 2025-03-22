@@ -1,0 +1,498 @@
+C51 COMPILER V9.57.0.0   MAIN                                                              12/26/2024 14:41:27 PAGE 1   
+
+
+C51 COMPILER V9.57.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\APP\Keil\Keil51\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "public.h"       //延时函数模块
+   3          #include "lcd9648.h"      //LCD9648显示模块
+   4          
+   5          #include "MatrixKey.h"    //矩阵键盘模块
+   6          #include "MODE.h"         //模式选择模块
+   7          #include "Buzzer.h"       //蜂鸣器模块（针对Manual手动模式）
+   8          #include "Timer0.h"       //定时器模块（针对AutoPlay模式，初始化）
+   9          #include "ired.h"         //红外控制模块
+  10          
+  11          //宏定义AutoFreq[]频率索引为音符，方便识谱,分别为L、M、H，
+  12          #define P0  0  //休止符
+  13          #define L1  1  //低音L
+  14          #define L1_ 2  //'_'表示升半音
+  15          #define L2  3
+  16          #define L2_ 4
+  17          #define L3  5
+  18          #define L4  6
+  19          #define L4_ 7
+  20          #define L5  8
+  21          #define L5_ 9
+  22          #define L6  10
+  23          #define L6_ 11
+  24          #define L7  12
+  25          #define M1  13  //中音M
+  26          #define M1_ 14
+  27          #define M2  15
+  28          #define M2_ 16
+  29          #define M3  17
+  30          #define M4  18
+  31          #define M4_ 19
+  32          #define M5  20
+  33          #define M5_ 21
+  34          #define M6  22
+  35          #define M6_ 23  
+  36          #define M7  24
+  37          #define H1  25  //高音H
+  38          #define H1_ 26
+  39          #define H2  27
+  40          #define H2_ 28
+  41          #define H3  29
+  42          #define H4  30  
+  43          #define H4_ 31
+  44          #define H5  32  
+  45          #define H5_ 33
+  46          #define H6  34
+  47          #define H6_ 35
+  48          #define H7  36
+  49          
+  50          u16 SPEED=500;  // 定义四分音符为500ms
+  51          
+  52          sbit Buzzer=P2^5;
+  53          sbit LED1=P2^1;   //手动模式指示灯manual
+  54          sbit LED2=P2^0;   //自动模式指示灯auto
+C51 COMPILER V9.57.0.0   MAIN                                                              12/26/2024 14:41:27 PAGE 2   
+
+  55          
+  56          
+  57          //手动演奏模块
+  58          u16 ManFreq[]={0,190,170,151,143,127,113,100,95,             //第0位为空，之后每一位分别与按键序号对应
+  59                                     95, 85, 75, 71, 63, 56, 50,47};  //弹奏对应的16个共15种频率
+  60          u8 code ManF_Node[][10]={"000","do-","re-","mi-","fa-","so-","la-","si-","do ",
+  61                                            "do ","re ","mi ","fa ","so ","la ","si ","do+"};//频率对应的音符
+  62          
+  63          void ManualPlay(u16 KeyNum)
+  64          {
+  65   1          lcd_show_string(0,0,12,"Manual:         ");
+  66   1      
+  67   1          if(KeyNum)
+  68   1          {
+  69   2              lcd_show_string(5,1,12,ManF_Node[KeyNum]);
+  70   2              Buzzer_Freq(ManFreq[KeyNum]);   //延时函数在文件内 
+  71   2          }
+  72   1      }   
+  73          
+  74          //自动播放模块
+  75          u8 FreqSelect;
+  76          u16 code AutoFreq[]={  //基于C大调
+  77              0,//休止符
+  78              63628,63731,63835,63928,64021,64103,64185,64260,64331,64400,64463,64528,//低音
+  79              64582,64633,64686,64732,64778,64820,64860,64898,64934,64968,65000,65032,//中音
+  80              65059,65085,65111,65134,65157,65178,65198,65217,65235,65252,65268,65284 //高音
+  81          };
+  82          
+  83          //以16分音符为基准时长记为1,音符后的数值表示音高持续时间
+  84          //Music1《天空之城》
+  85          u8 code Music1[]={    //(音高，时长）
+  86          //1
+  87              P0,4,P0,4,P0,4,M6,2,M7,2,   //每一行为一小节,
+  88              H1,4+2,M7,2,H1,4,H3,4,
+  89              M7,4+4+4,M3,2,M3,2, 
+  90          //2
+  91              M6,4+2,M5,2,M6,4,H1,4,    
+  92              M5,4+4+4,M3,4,    
+  93              M4,4+2,M3,2,M4,4,H1,4,
+  94          //3
+  95              M3,4+4,P0,2,H1,2,H1,2,H1,2,   
+  96              M7,4+2,M4_,2,M4_,4,M7,4,    
+  97              M7,4+4,P0,4,M6,2,M7,2,
+  98          //4
+  99              H1,4+2,M7,2,H1,4,H3,4,    
+ 100              M7,4+4+4,M3,2,M3,2,   
+ 101              M6,4+2,M5,2,M6,4,H1,6,
+ 102          //5
+ 103              M5,4+4+4,M2,2,M3,2,   
+ 104              M4,4,H1,2,M7,2+2,H1,2+4,    
+ 105              H2,2,H2,2,H3,2,H1,2+4+4,
+ 106          //6
+ 107              H1,2,M7,2,M6,2,M6,2,M7,4,M5_,4,   
+ 108              M6,4+4+4,H1,2,H2,2,   
+ 109              H3,4+2,H2,2,H3,4,H5,4,
+ 110          //7
+ 111              H2,4+4+4,M5,2,M5,2,   
+ 112              H1,4+2,M7,2,H1,4,H3,4,    
+ 113              H3,4+4+4,
+ 114          //8
+ 115              M6,2,M7,2,H1,4,M7,4,H2,2,H2,2,    
+ 116              H1,4+2,M5,2+4+4,    
+C51 COMPILER V9.57.0.0   MAIN                                                              12/26/2024 14:41:27 PAGE 3   
+
+ 117              H4,4,H3,4,H2,4,H1,4,  
+ 118          //9
+ 119              H3,4+4+4,H3,4,    
+ 120              H6,4+4,H5,4,H5,4,   
+ 121              H3,2,H2,2,H1,4+4,P0,2,H1,2,
+ 122          //10
+ 123              H2,4,H1,2,H2,2,H2,4,H5,4,   
+ 124              H3,4+4+4,H3,4,    
+ 125              H6,4+4,H5,4+4,
+ 126          //11
+ 127              H3,2,H2,2,H1,4+4,P0,2,H1,2,   
+ 128              H2,4,H1,2,H2,2+4,M7,4,    
+ 129              M6,4+4+4,M6,2,M7,2,
+ 130            
+ 131              0xff //结束
+ 132          };
+ 133          //Music2 《我的祖国》
+ 134          u8 code Music2[]={    //(音高，时长）
+ 135          //1
+ 136              M1,2,M2,2,L6,2,L5,2,M5,6,M6,2,//每一行为一小节,
+ 137              M3,2,M5,2,H1,2,M6,2,M5,8,
+ 138              M5,4,M6,2,M5,2,M3,2,M2,2,M3,4,
+ 139              M5,2,M3,2,L6,2,M1,2,M2,8,
+ 140          //2
+ 141              M2,2,M5,2,M3,2,M1,2,L6,4,L5,2,L6,2,
+ 142              M2,2,M6,2,M5,2,M6,2,M3,6,M2,2,
+ 143              M1,2,M2,1,M2,1,M3,2,M5,1,M5,1,H1,2,M6,2,M5,4,
+ 144          //3
+ 145              M5,2,L6,2,M1,2,M2,2,M4,6,M6,1,M6,1,
+ 146              M5,3,M6,1,M3,2,M2,2,M1,8,
+ 147              M1,8,P0,4,M5,2,M5,2,
+ 148              H1,8,H2,6,H1,2,
+ 149              M6,2,H1,2,M5,2,M7,2,M6,8,
+ 150          //4
+ 151              M5,4,M3,4,H1,4,M6,3,M6,1,
+ 152              M5,2,M6,2,M1,2,M2,2,M3,8,
+ 153              M3,4,M3,2,M5,2,M6,4,M6,2,H1,2,
+ 154              H2,4,H3,2,H1,2,H2,4+2,H1,2,
+ 155          //5
+ 156              H2,2,M3,2,M5,2,M6,2,M7,2,H2,1,H2,1,M6,2,M7,2,
+ 157              M5,16,
+ 158              H2,2,M7,2,M6,2,M5,2,M3,2,M5,1,M5,1,M6,2,H2,2,
+ 159              H1,16,
+ 160              
+ 161                0xff //结束
+ 162          };
+ 163          
+ 164          //Music3 《前前前世》
+ 165          u8 code Music3[]={    //(音高，时长）
+ 166          //1
+ 167              M1,1,M2,1,M3,2,H1,2,M5,2,H2,3,M5,1,H3,1,M5,1,H5,2,
+ 168              H5,2,H1,2,H3,2,H1,2,H4,2,H3,2,H1,4,
+ 169              M1,1,M2,1,M3,2,H1,2,M5,2,H2,3,M5,1,H3,1,M5,1,H5,2,
+ 170              H5,2,H1,2,H3,2,H1,2,H4,2,H3,2,H1,4,
+ 171              
+ 172                0xff //结束
+ 173          };
+ 174          
+ 175          void Autoplay(u16 Key)
+ 176          {
+ 177   1          if(Key==1) // 播放 Music1
+ 178   1          {
+C51 COMPILER V9.57.0.0   MAIN                                                              12/26/2024 14:41:27 PAGE 4   
+
+ 179   2              u8 MusicSelect=0;
+ 180   2              bit pauseFlag = 0;    // 暂停标志位，0=正常播放, 1=暂停
+ 181   2      
+ 182   2              while(LED2==0 && Key==1)
+ 183   2              {
+ 184   3                  lcd_show_string(0,1,12,"Music1: ~~       ");  
+ 185   3      
+ 186   3                  // 判断是否为暂停状态
+ 187   3                  if(pauseFlag == 0)  
+ 188   3                  {
+ 189   4                      if(Music1[MusicSelect] != 0xff) // 判断音乐是否结束
+ 190   4                      {
+ 191   5                          FreqSelect = Music1[MusicSelect];        //选择对应的音调
+ 192   5                          MusicSelect++;
+ 193   5                          delay_ms(SPEED/4 * Music1[MusicSelect]); //播放时延  (音符时长)
+ 194   5                          MusicSelect++;
+ 195   5      
+ 196   5                          // 为了让音符之间有明显间隔，先关后开定时器
+ 197   5                          TR0 = 0;  
+ 198   5                          delay_ms(5);
+ 199   5                          TR0 = 1; 
+ 200   5                      }
+ 201   4                      else  // 音乐结束处理
+ 202   4                      {
+ 203   5                          TR0 = 0;       
+ 204   5                          FreqSelect = 0;
+ 205   5                          Key = 0;       // 跳出循环
+ 206   5                      }
+ 207   4                  }           
+ 208   3                  
+ 209   3                  // 每次循环检查是否按下了 按键5(暂停/播放) 或 6(复位)
+ 210   3                  {
+ 211   4                      u8 newKey = MatrixKey();   
+ 212   4      
+ 213   4                      if(newKey == 5)  // 切换暂停/播放
+ 214   4                      {
+ 215   5                          pauseFlag = !pauseFlag;  
+ 216   5                        
+ 217   5                          if(pauseFlag == 1)  // 暂停播放
+ 218   5                          {
+ 219   6                              TR0 = 0;     
+ 220   6                          }
+ 221   5                          else //恢复播放
+ 222   5                          {
+ 223   6                              TR0 = 1;     
+ 224   6                          }
+ 225   5                      }
+ 226   4                      else if(newKey == 6) // 复位(停止播放)
+ 227   4                      {
+ 228   5                          TR0 = 0;      
+ 229   5                          FreqSelect = 0; 
+ 230   5                          Key = 0;        // 跳出 while 循环
+ 231   5                        
+ 232   5                          // 清空显示的播放音乐
+ 233   5                          lcd9648_clear(); 
+ 234   5                          lcd_show_string(0,0,12,"Automatic:        ");
+ 235   5                          SPEED=500;
+ 236   5                      }
+ 237   4                      else if(newKey == 7) // 按键7：加速播放
+ 238   4                      {
+ 239   5                          SPEED=SPEED-100;
+ 240   5                      }
+C51 COMPILER V9.57.0.0   MAIN                                                              12/26/2024 14:41:27 PAGE 5   
+
+ 241   4                      else if(newKey == 8) // 按键8：减速播放
+ 242   4                      {
+ 243   5                          SPEED=SPEED+100;
+ 244   5                      }
+ 245   4                      else if(newKey == 9) // 按键9：增大音量
+ 246   4                      {
+ 247   5                          SPEED=SPEED+100;
+ 248   5                      }
+ 249   4                      else if(newKey == 10) // 按键10：减小音量
+ 250   4                      {
+ 251   5                          SPEED=SPEED+100;
+ 252   5                      }
+ 253   4                  }
+ 254   3              }
+ 255   2          }
+ 256   1          
+ 257   1          if(Key==2)//播放 Music2
+ 258   1          {
+ 259   2              u8 MusicSelect=0;
+ 260   2              bit pauseFlag = 0;    // 0=正常播放, 1=暂停
+ 261   2      
+ 262   2              while(LED2==0 && Key==2)
+ 263   2              {       
+ 264   3                  lcd_show_string(0,1,12,"Music2: ~~       ");  
+ 265   3      
+ 266   3                  // 如果不是暂停状态，则正常播放下一音符
+ 267   3                  if(pauseFlag == 0)  
+ 268   3                  {
+ 269   4                    if(Music2[MusicSelect]!=0xff)//判断是否结束
+ 270   4                    {
+ 271   5                        FreqSelect=Music2[MusicSelect];
+ 272   5                        MusicSelect++;
+ 273   5                        delay_ms(SPEED/4*Music2[MusicSelect]); //音符延时
+ 274   5                        MusicSelect++;
+ 275   5                        TR0=0;  
+ 276   5                        delay_ms(5);
+ 277   5                        TR0=1;  //隔离音符
+ 278   5                    }
+ 279   4                    else 
+ 280   4                    {
+ 281   5                        TR0=0; 
+ 282   5                        FreqSelect=0;
+ 283   5                        Key=0;              
+ 284   5                    }
+ 285   4                  }
+ 286   3                  
+ 287   3                  // 检查是否按下了 按键5(暂停/播放) 或 6(复位)
+ 288   3                  {
+ 289   4                      u8 newKey = MatrixKey();   
+ 290   4      
+ 291   4                      if(newKey == 5)  // 切换暂停/播放
+ 292   4                      {
+ 293   5                          pauseFlag = !pauseFlag;  
+ 294   5                        
+ 295   5                          if(pauseFlag == 1)  // 暂停状态
+ 296   5                          {
+ 297   6                              TR0 = 0;     
+ 298   6                          }
+ 299   5                          else // 恢复播放
+ 300   5                          {
+ 301   6                              TR0 = 1;     
+ 302   6                          }
+C51 COMPILER V9.57.0.0   MAIN                                                              12/26/2024 14:41:27 PAGE 6   
+
+ 303   5                      }
+ 304   4                      else if(newKey == 6) // 按键6：复位(停止播放)
+ 305   4                      {
+ 306   5                          TR0 = 0;        
+ 307   5                          FreqSelect = 0; 
+ 308   5                          Key = 0;        // 跳出 while 循环
+ 309   5                        
+ 310   5                          // 清空显示
+ 311   5                          lcd9648_clear(); 
+ 312   5                          lcd_show_string(0,0,12,"Automatic:        ");
+ 313   5                          SPEED=500;
+ 314   5                      }
+ 315   4                      else if(newKey == 7) // 按键7：加速播放
+ 316   4                      {
+ 317   5                          SPEED=SPEED-100;
+ 318   5                      }
+ 319   4                      else if(newKey == 8) // 按键8：减速播放
+ 320   4                      {
+ 321   5                          SPEED=SPEED+100;
+ 322   5                      }
+ 323   4                  }
+ 324   3              }
+ 325   2          } 
+ 326   1          if(Key==3)//播放 Music2
+ 327   1          {
+ 328   2              u8 MusicSelect=0;
+ 329   2              bit pauseFlag = 0;    // 0=正常播放, 1=暂停
+ 330   2            
+ 331   2              while(LED2==0 && Key==3)
+ 332   2              {       
+ 333   3                  lcd_show_string(0,1,12,"Music3: ~~       ");  
+ 334   3                
+ 335   3                  // 如果不是暂停状态，则正常播放下一音符
+ 336   3                  if(pauseFlag == 0)  
+ 337   3                  {
+ 338   4                    if(Music3[MusicSelect]!=0xff)//判断是否结束
+ 339   4                    {
+ 340   5                        FreqSelect=Music3[MusicSelect];
+ 341   5                        MusicSelect++;
+ 342   5                        delay_ms(SPEED/4*Music3[MusicSelect]);//音符延时
+ 343   5                        MusicSelect++;
+ 344   5                        TR0=0;
+ 345   5                        delay_ms(5);
+ 346   5                        TR0=1;  //隔离音符
+ 347   5                    }
+ 348   4                    else //退出
+ 349   4                    {
+ 350   5                        TR0=0; 
+ 351   5                        FreqSelect=0;
+ 352   5                        Key=0;              
+ 353   5                    }
+ 354   4                  }
+ 355   3                  
+ 356   3                  // 检查是否按下了 按键5(暂停/播放) 或 6(复位)
+ 357   3                  {
+ 358   4                      u8 newKey = MatrixKey();   
+ 359   4      
+ 360   4                      if(newKey == 5)  // 切换暂停/播放
+ 361   4                      {
+ 362   5                          pauseFlag = !pauseFlag;  
+ 363   5                        
+ 364   5                          if(pauseFlag == 1)  // 处于暂停状态
+C51 COMPILER V9.57.0.0   MAIN                                                              12/26/2024 14:41:27 PAGE 7   
+
+ 365   5                          {
+ 366   6                              TR0 = 0;     
+ 367   6                          }
+ 368   5                          else // 恢复播放
+ 369   5                          {
+ 370   6                              TR0 = 1;     
+ 371   6                          }
+ 372   5                      }
+ 373   4                      else if(newKey == 6) // 按键6：复位(停止播放)
+ 374   4                      {
+ 375   5                          TR0 = 0;        
+ 376   5                          FreqSelect = 0; 
+ 377   5                          Key = 0;        // 跳出 while 循环
+ 378   5                        
+ 379   5                          // 清空显示
+ 380   5                          lcd9648_clear(); 
+ 381   5                          lcd_show_string(0,0,12,"Automatic:       ");
+ 382   5                          SPEED=500;
+ 383   5                      }
+ 384   4                      else if(newKey == 7) // 按键7：加速播放
+ 385   4                      {
+ 386   5                          SPEED=SPEED-100;
+ 387   5                      }
+ 388   4                      else if(newKey == 8) // 按键8：减速播放
+ 389   4                      {
+ 390   5                          SPEED=SPEED+100;
+ 391   5                      }
+ 392   4                  } 
+ 393   3              }
+ 394   2          } 
+ 395   1      } 
+ 396          
+ 397          u16 KeyNum,Key;
+ 398          void main()
+ 399          {
+ 400   1          u8 mode_sel=2;  // 模式选择，默认未选为 2
+ 401   1          lcd9648_init(); // LCD初始化
+ 402   1          delay_ms(300);
+ 403   1      
+ 404   1          lcd9648_clear(); 
+ 405   1          lcd_show_string(0,0,12,"Welcome to");
+ 406   1          lcd_show_string(0,1,12,"Music box!");
+ 407   1          delay_ms(2500);
+ 408   1        
+ 409   1          ired_init(); //红外初始化
+ 410   1      
+ 411   1          LED1=1; LED2=1;
+ 412   1      
+ 413   1          lcd9648_clear(); 
+ 414   1          lcd_show_string(0,0,12,"Select mode:     ");
+ 415   1          lcd_show_string(0,1,12,"k1:Autoplay");
+ 416   1          lcd_show_string(0,2,12,"k2:Manual");
+ 417   1          delay_ms(2500);
+ 418   1        
+ 419   1          while(1)
+ 420   1          {               
+ 421   2              mode_sel = mode();  // 模式按键检测
+ 422   2              if(mode_sel==0)
+ 423   2              {
+ 424   3                LED1=0;
+ 425   3                LED2=1;
+ 426   3                lcd9648_clear();
+C51 COMPILER V9.57.0.0   MAIN                                                              12/26/2024 14:41:27 PAGE 8   
+
+ 427   3              }
+ 428   2              else if(mode_sel==1)
+ 429   2              {
+ 430   3                LED1=1;
+ 431   3                LED2=0;
+ 432   3                lcd9648_clear();
+ 433   3              }
+ 434   2              
+ 435   2              if(LED1==0) //ManualPlay手动弹奏
+ 436   2              {    
+ 437   3                KeyNum = iredKey();
+ 438   3                ManualPlay(KeyNum);     
+ 439   3              }     
+ 440   2                      
+ 441   2              else if(LED2==0)  //Auto自动播放
+ 442   2              {
+ 443   3                  lcd_show_string(0,0,12,"Automatic:        ");
+ 444   3                  Key = MatrixKey();
+ 445   3      
+ 446   3                  Timer0Init();  //定时器初始化  开始记录休止符
+ 447   3                  Autoplay(Key);
+ 448   3              }
+ 449   2          }
+ 450   1      }
+ 451          
+ 452          void Timer0_Routine() interrupt 1
+ 453          {
+ 454   1          if(AutoFreq[FreqSelect])//判断休止符
+ 455   1          {
+ 456   2              TL0 = AutoFreq[FreqSelect]%256;   //设置定时初值
+ 457   2              TH0 = AutoFreq[FreqSelect]/256;   //设置定时初值
+ 458   2              Buzzer=!Buzzer;
+ 459   2          }
+ 460   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1064    ----
+   CONSTANT SIZE    =    945    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     41       7
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,12 @@
+".\Objects\lcd9648.obj",
+".\Objects\MatrixKey.obj",
+".\Objects\Buzzer.obj",
+".\Objects\mode.obj",
+".\Objects\Timer0.obj",
+".\Objects\ired.obj",
+".\Objects\wifi_control.obj",
+".\Objects\uart.obj",
+".\Objects\public.obj",
+".\Objects\main.obj" 
+TO ".\Objects\music_box" 
+PRINT(".\Listings\music_box.m51")
