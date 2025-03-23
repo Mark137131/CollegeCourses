@@ -1,81 +1,69 @@
-# University Course Projects Portfolio
+# University Course Projects
 
-This repository showcases core project implementations from undergraduate courses, covering digital image processing, technical writing, and embedded systems development. Each project is organized in dedicated directories with complete codebases, documentation, and demonstration materials.
-
-![Project Banner](assets/banner.png) <!-- Replace with actual banner path -->
+This repository covers digital image processing, technical writing, and embedded systems development. Each project is organized in dedicated directories with relevant materials.
 
 ## 📂 Repository Structure
 
-Repository/
-├── Digital_Image_Processing/ # GUI-based Image Processing Toolkit
-├── Expository_Writing/ # Technical Paper on Document Forgery Detection
-└── Singlechip/ # 8051 MCU-based Music Box System
+```
+Repository
+├── Digital_Image_Processing   # GUI-based Image Processing Toolkit
+├── Expository_Writing   # Technical Paper on Document Forgery Detection
+└── Singlechip   # 8051 MCU-based Music Box System
+```
 
----
+## Digital Image Processing Project
 
-## 🖼️ Digital Image Processing Project
 **Intuitive GUI for Image Manipulation**  
-![GUI Demonstration](assets/dip_demo.gif) <!-- Update with actual media path -->
+![GUI Demonstration][Digital_Image_Processing/demo.png](https://github.com/Mark137131/CollegeCourses/blob/main/Digital_Image_Processing/demo.png)
 
 ### Key Features
+
 - Interactive parameter tuning for core algorithms
 - Multi-format support (JPEG/PNG/BMP)
-- Integrated modules: 
-  - Edge detection (Sobel/Canny)
-  - Spatial filtering (Gaussian/Median)
-  - Histogram equalization
+- Integrated modules
+  - Basic function
+  - Spatial Filter
+  - Frequency Filter
+  - Add noise
+  - Morphology
 
 ---
 
-## 📝 Expository Writing
+## Expository Writing
+
 **Research Paper**: *Comprehensive Review on Document Forgery Detection Techniques*  
 **Domain**: Digital Document Security · Image Forensics · Text Tampering Detection
 
-### Abstract
-> "With the proliferation of digital documents, forgery detection faces unique challenges in text manipulation compared to natural image alterations. This paper systematically analyzes seven mainstream detection methodologies, establishes evaluation metrics tailored for document authenticity verification, and identifies technical limitations in current forensic approaches. Our comparative study provides theoretical foundations for developing multimodal feature fusion solutions."
-
 ### Key Contributions
-- Taxonomy of document forgery types (content/format/metadata)
-- Quantitative analysis of text region manipulation detection
-- Performance benchmarking on ICDAR datasets
+
+- Comprehensive review of document forgery detection, emphasizing unique challenges compared to natural image forgery.
+- Classification framework outlining forgery types, detection challenges, and evaluation metrics.
+- Critical evaluation of seven detection methods, highlighting strengths and limitations.
+- Comparative insights to advance research and practical solutions for document authenticity.
 
 ---
 
-## 🔊 Singlechip Music Box System
+## Singlechip Music Box System
+
 **8051 Microcontroller-Based Embedded Audio Platform**  
-![Hardware Architecture](assets/singlechip_diagram.jpg) <!-- Add circuit/prototype photo -->
+![Singlechip/images/welcome.jpg](https://github.com/Mark137131/CollegeCourses/blob/main/Singlechip/images/welcome.jpg)
 
 ### System Features
+
 | Mode         | Control Method      | Functionality               |
 |--------------|---------------------|-----------------------------|
 | 🎹 Manual    | Matrix Keypad       | Real-time LCD note display  |
 | ▶️ Autoplay  | IR Remote           | Preloaded melody selection  |
 
+![Singlechip/images/mode_selection.jpg](https://github.com/Mark137131/CollegeCourses/blob/main/Singlechip/images/mode_selection.jpg)
+
 ### Modular Design
-- **Display Unit**: 
-  - LCD9648 with dynamic interface
-- **Input System**: 
-  - 4×4 matrix keypad (mode selection)
-  - IR receiver (NEC protocol)
-- **Audio Engine**: 
-  - PWM-driven buzzer (12-tone equal temperament)
-  - Tempo control (60-180 BPM)
-- **Control Logic**: 
-  - State machine implementation
 
----
-
-## 🛠️ Technical Stack
-- **Image Processing**: MATLAB App Designer + OpenCV-Python
-- **Embedded Development**: 
-  - Keil μVision IDE (C51 compiler)
-  - Proteus 8 Professional (Circuit simulation)
-- **Documentation**: LaTeX (IEEE conference template)
-
----
-
-## 🚀 Quick Start
-### Image Processing GUI
-```bash
-cd Digital_Image_Processing
-matlab -nodisplay -r "run('src/main.m')"
+- **Display module**:
+  - LCD(lcd9648) displays screen
+- **Input System**:
+  - 4×4 matrix keypad (mode selection, etc)
+  - Infrared receiver
+- **Audio Engine**:
+  - PWM-driven buzzer
+  - Tempo control
