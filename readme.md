@@ -1,4 +1,4 @@
-# University Course Projects
+# Course Projects
 
 This repository covers digital image processing, technical writing, and embedded systems development. Each project is organized in dedicated directories with relevant materials.
 
@@ -6,20 +6,19 @@ This repository covers digital image processing, technical writing, and embedded
 
 ```
 Repository
-├── Digital_Image_Processing   # GUI-based Image Processing Toolkit
-├── Expository_Writing   # Technical Paper on Document Forgery Detection
-└── Singlechip   # 8051 MCU-based Music Box System
+├── Digital_Image_Processing  # GUI-based Image Processing Toolkit
+├── Expository_Writing        # Technical Paper on Document Forgery Detection
+└── Singlechip                # 8051 MCU-based Music Box System
 ```
 
 ## Digital Image Processing Project
 
 **Intuitive GUI for Image Manipulation**  
-![GUI Demonstration][Digital_Image_Processing/demo.png](https://github.com/Mark137131/CollegeCourses/blob/main/Digital_Image_Processing/demo.png)
+![Digital_Image_Processing/demo.png](https://github.com/Mark137131/CollegeCourses/blob/main/Digital_Image_Processing/demo.png)
 
 ### Key Features
 
 - Interactive parameter tuning for core algorithms
-- Multi-format support (JPEG/PNG/BMP)
 - Integrated modules
   - Basic function
   - Spatial Filter
