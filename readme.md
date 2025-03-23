@@ -14,6 +14,7 @@ Repository
 ## Digital Image Processing Project
 
 **Intuitive GUI for Image Manipulation**  
+
 ![Digital_Image_Processing/demo.png](https://github.com/Mark137131/CollegeCourses/blob/main/Digital_Image_Processing/demo.png)
 
 ### Key Features
@@ -44,7 +45,8 @@ Repository
 
 ## Singlechip Music Box System
 
-**8051 Microcontroller-Based Embedded Audio Platform**  
+**8051 Microcontroller-Based Embedded Audio Platform**
+
 ![Singlechip/images/welcome.jpg](https://github.com/Mark137131/CollegeCourses/blob/main/Singlechip/images/welcome.jpg)
 
 ### System Features
