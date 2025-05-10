@@ -8,7 +8,9 @@ This repository covers digital image processing, technical writing, and embedded
 Repository
 ├── Digital_Image_Processing  # GUI-based Image Processing Toolkit
 ├── Expository_Writing        # Technical Paper on Document Forgery Detection
-└── Singlechip                # 8051 MCU-based Music Box System
+├── Singlechip                # 8051 MCU-based Music Box System
+└── Machine_Learning          # UV Index Prediction with Neural Networks
+
 ```
 
 ## Digital Image Processing Project
@@ -68,3 +70,24 @@ Repository
 - **Audio Engine**:
   - PWM-driven buzzer
   - Tempo control
+
+## Machine Learning
+
+**UV Index Prediction with Neural Networks**
+
+### Overview
+Use neural networks to capture non-linear patterns and boost UV Index prediction accuracy.
+
+### Features
+- **Neural Models**: Train feedforward networks for UV Index.
+- **Ablation Tests**: Compare variations in layers, neurons, activations, learning rates, batch sizes, and early stopping.
+- **PCA Comparison**: Train with and without PCA to see its effect.
+- **Evaluation**: Report Mean Squared Error (MSE) and R².
+
+### Results
+- Neural networks beat traditional methods on MSE and R².
+- Ablation reveals best architecture and training settings.
+- PCA offers little benefit for small or specific datasets.
+
+![Predicted vs. Actual UV Index](https://github.com/Mark137131/CollegeCourses/blob/main/Machine_Learning/GTvsPrediction.png)  
+![Training Loss](https://github.com/Mark137131/CollegeCourses/blob/main/Machine_Learning/model_loss.png)
