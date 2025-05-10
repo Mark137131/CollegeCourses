@@ -71,6 +71,8 @@ Repository
   - PWM-driven buzzer
   - Tempo control
 
+---
+
 ## Machine Learning
 
 **UV Index Prediction with Neural Networks**
@@ -89,5 +91,6 @@ Use neural networks to capture non-linear patterns and boost UV Index prediction
 - Ablation reveals best architecture and training settings.
 - PCA offers little benefit for small or specific datasets.
 
-![Predicted vs. Actual UV Index](https://github.com/Mark137131/CollegeCourses/blob/main/Machine_Learning/GTvsPrediction.png)  
-![Training Loss](https://github.com/Mark137131/CollegeCourses/blob/main/Machine_Learning/model_loss.png)
+![Predicted vs. Actual UV Index](https://github.com/Mark137131/CollegeCourses/blob/main/Machine_Learning/images/GTvsPrediction.png)  
+![Training Loss](https://github.com/Mark137131/CollegeCourses/blob/main/Machine_Learning/images/model_loss.png)
+
